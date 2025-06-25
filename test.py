@@ -3,18 +3,11 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from dotenv import load_dotenv
 
-load_dotenv()
+#Document loading
+from langchain_community.document_loaders import PyPDFLoader
 
-llm = ChatOpenAI(
-    model="google/gemini-flash-1.5", 
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY")
-)
+file_path = "Paper.pdf"
+loader = PyPDFLoader(file_path)
+docs = loader.load()
 
-messages = [
-    HumanMessage(content="Explain the importance of using environment variables for API keys in a short paragraph.")
-]
-
-response = llm.invoke(messages)
-
-print(response.content)
+print(docs)
