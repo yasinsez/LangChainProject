@@ -1,4 +1,4 @@
 .env
 .DS_Store
 .gitconfig-personal
-.gitconfig-work
+.gitconfig-workvenv/
