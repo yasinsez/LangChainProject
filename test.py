@@ -30,6 +30,7 @@ embeddings = HuggingFaceEmbeddings(
 
 #Creating FAISS vector store
 db = FAISS.from_documents(texts, embeddings)
+db.save_local("faiss_index")
 
 #Similarity search
 query = "What is the main topic of the paper?"
