@@ -29,11 +29,14 @@ embeddings = HuggingFaceEmbeddings(
 )
 
 #Creating FAISS vector store
-db = FAISS.from_documents(texts, embeddings)
-db.save_local("faiss_index")
+#db = FAISS.from_documents(texts, embeddings)
+#db.save_local("faiss_index")
+
+#Loading FAISS vector store
+db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 
 #Similarity search
-query = "What is the main topic of the paper?"
+query = "Within the Histoire, in truth, there were unjustifiable preferences, hazardous elucidations and a few mistakes"
 result_docs = db.similarity_search(query)
 
 for i, doc in enumerate(result_docs):
