@@ -36,6 +36,7 @@ embeddings = HuggingFaceEmbeddings(
 db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 
 #Similarity search
+''''
 query = "Within the Histoire, in truth, there were unjustifiable preferences, hazardous elucidations and a few mistakes"
 result_docs = db.similarity_search(query)
 
@@ -44,3 +45,42 @@ for i, doc in enumerate(result_docs):
     print(doc.page_content)
     print(f"Source: {doc.metadata.get('source', 'N/A')}, Page: {doc.metadata.get('page', 'N/A')}")
     print("-" * 20)
+'''
+
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
+from langchain import hub
+from langchain_core.prompts import ChatPromptTemplate
+
+
+prompt_template = """You are an expert research assistant analyzing academic papers. Answer the question based on the provided context.
+
+Instructions:
+- Provide a clear, direct answer in 3-4 sentences maximum
+- Start with the main point, then add supporting details
+- Reference specific sections or evidence when possible
+- If information is insufficient, explain what's missing and provide a partial answer
+- Use professional, academic language
+- If multiple perspectives exist, acknowledge them briefly
+
+Context: {context}
+Question: {input}
+
+Answer:
+"""
+
+retrieval_qa_chat_prompt = ChatPromptTemplate.from_template(prompt_template)
+
+llm = ChatOpenAI(
+    model="google/gemini-flash-1.5", 
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY")
+)
+retriever = db.as_retriever()
+combine_docs_chain = create_stuff_documents_chain(
+    llm, retrieval_qa_chat_prompt
+)
+retrieval_chain = create_retrieval_chain(retriever, combine_docs_chain)
+
+response = retrieval_chain.invoke({"input": "What is the main idea of the paper?"})
+print(response["answer"])
