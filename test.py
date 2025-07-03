@@ -61,10 +61,10 @@ Answer:
     retrieval_qa_chat_prompt = ChatPromptTemplate.from_template(prompt_template)
     retriever = db.as_retriever()
     llm = ChatOpenAI(
-    model="google/gemini-flash-1.5", 
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY")
-)
+        model="google/gemini-flash-1.5", 
+        base_url="https://openrouter.ai/api/v1",
+        api_key=os.getenv("OPENROUTER_API_KEY")
+    )
 
     combine_docs_chain = create_stuff_documents_chain(
         llm, retrieval_qa_chat_prompt
