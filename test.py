@@ -73,13 +73,15 @@ Answer:
     response = retrieval_chain.invoke({"input": question})
     print(response["answer"])
 
-def main():
-    #To create embeddings
-    #file_path = "Paper.pdf"
-    #docs = load_document(file_path)
-    #split_docs = split_document(docs)
-    #db = create_embeddings(split_docs)
+def create_faiss_db_from_document(Paper_path):
+    docs = load_document(Paper_path)
+    split_docs = split_document(docs)
+    db = create_embeddings(split_docs)
     db = load_faiss_index()
+    return db
+
+def main():
+    db = create_faiss_db_from_document("Paper.pdf")
     print(retrieval_chain(db, "What is the main idea of the paper?"))
 
 
