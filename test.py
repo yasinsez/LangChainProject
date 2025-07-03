@@ -77,13 +77,12 @@ def create_faiss_db_from_document(Paper_path):
     docs = load_document(Paper_path)
     split_docs = split_document(docs)
     db = create_embeddings(split_docs)
-    db = load_faiss_index()
     return db
 
 def main():
-    db = create_faiss_db_from_document("Paper.pdf")
-    print(retrieval_chain(db, "What is the main idea of the paper?"))
-
+    #db = create_faiss_db_from_document("math.pdf")
+    db = load_faiss_index()
+    print(retrieval_chain(db, "Can you paraphrase an idea from the paper? Please just one sentence."))
 
 if __name__ == "__main__":
     main()

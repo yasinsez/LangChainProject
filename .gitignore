@@ -4,3 +4,5 @@
 .gitconfig-work
 venv/
 Paper.pdf
+math.pdf
+faiss_index/
