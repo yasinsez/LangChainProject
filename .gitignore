@@ -1,8 +1,39 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment variables
 .env
+.env.*
+
+# FAISS index files (if you want to regenerate them)
+faiss_index/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Local development settings
+*.log
 .DS_Store
+
 .gitconfig-personal
 .gitconfig-work
-venv/
 Paper.pdf
 math.pdf
-faiss_index/
