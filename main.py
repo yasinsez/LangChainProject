@@ -73,7 +73,7 @@ Answer:
     )
     retrieval_chain = create_retrieval_chain(retriever, combine_docs_chain)
     response = retrieval_chain.invoke({"input": question})
-    print(response["answer"])
+    return response["answer"]
 
 def create_faiss_db_from_document(Paper_path):
     docs = load_document(Paper_path)
@@ -88,13 +88,14 @@ def read_root():
 @app.get("/ask/{question}")
 def ask(question: str):
     db = load_faiss_index()
-    return retrieval_chain(db, question)
+    return {"answer": retrieval_chain(db, question=question)}
 
 def main():
     #db = create_faiss_db_from_document("math.pdf")
-    db = load_faiss_index()
-    question = "What is the main idea of the paper?"
-    print(retrieval_chain(db, question))
+    #db = load_faiss_index()
+    #question = "What is the main idea of the paper?"
+    #print(retrieval_chain(db, question))
+    print("hello")
 
 if __name__ == "__main__":
     main()
