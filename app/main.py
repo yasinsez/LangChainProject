@@ -9,9 +9,11 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate
 from fastapi import FastAPI
+from mangum import Mangum
 
 load_dotenv()
 app = FastAPI()
+handler = Mangum(app)
 
 #Document loading
 def load_document(file_path):
