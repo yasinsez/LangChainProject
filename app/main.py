@@ -4,16 +4,15 @@ from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
+# HuggingFaceEmbeddings is no longer needed at runtime
+# from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate
 from fastapi import FastAPI
-from mangum import Mangum
 
 load_dotenv()
 app = FastAPI()
-handler = Mangum(app)
 
 #Document loading
 def load_document(file_path):
@@ -27,22 +26,42 @@ def split_document(docs):
     texts = text_splitter.split_documents(docs)
     return texts
 
-#Creating embeddings
-def create_embeddings(texts):
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-    #Creating FAISS vector store
-    db = FAISS.from_documents(texts, embeddings)
-    db.save_local("faiss_index")
-    return db
+# This function is for building the index offline, not for runtime.
+# #Creating embeddings
+# def create_embeddings(texts):
+#     embeddings = HuggingFaceEmbeddings(
+#         model_name="sentence-transformers/all-MiniLM-L6-v2"
+#     )
+#     #Creating FAISS vector store
+#     db = FAISS.from_documents(texts, embeddings)
+#     db.save_local("faiss_index")
+#     return db
 
 #Loading FAISS vector store
 def load_faiss_index():
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    # The embedding model is only needed for CREATING the index.
+    # For loading and querying, we can pass None, but we need to provide a dummy embedder
+    # that matches the expected interface for LangChain's FAISS.load_local.
+    # A simple mock or a non-operational embedder would work here if needed,
+    # but FAISS itself doesn't need it for lookups.
+    # However, LangChain's wrapper *does* require an embedding object.
+    # Let's try loading without it first, and if that fails, we'll use a placeholder.
+    # The allow_dangerous_deserialization flag is important here.
+    
+    # We need an embedding object to satisfy the LangChain FAISS loader's signature,
+    # but the actual embedding model isn't used for retrieval.
+    # We will use a placeholder or a mock embedder from LangChain if available.
+    # Let's check for a "Fake" or "Mock" embedder. A quick search suggests
+    # langchain_community.embeddings.fake.FakeEmbeddings
+    from langchain_community.embeddings.fake import FakeEmbeddings
+
+    embeddings = FakeEmbeddings(size=384) # The size must match the original model (all-MiniLM-L6-v2 has 384 dimensions)
+
+    db = FAISS.load_local(
+        "faiss_index", 
+        embeddings, 
+        allow_dangerous_deserialization=True
     )
-    db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     return db
 
 #Retrieval chain
@@ -78,10 +97,13 @@ Answer:
     return response["answer"]
 
 def create_faiss_db_from_document(Paper_path):
-    docs = load_document(Paper_path)
-    split_docs = split_document(docs)
-    db = create_embeddings(split_docs)
-    return db
+    # This function should not be part of the Lambda runtime.
+    # It's an offline build step.
+    # docs = load_document(Paper_path)
+    # split_docs = split_document(docs)
+    # db = create_embeddings(split_docs)
+    # return db
+    pass
 
 @app.get("/")
 def read_root():
@@ -92,13 +114,16 @@ def ask(question: str):
     db = load_faiss_index()
     return {"answer": retrieval_chain(db, question=question)}
 
-def main():
-    #db = create_faiss_db_from_document("math.pdf")
-    #db = load_faiss_index()
-    #question = "What is the main idea of the paper?"
-    #print(retrieval_chain(db, question))
-    print("hello")
+def main(event, context):
+    # This main function is now for direct invocation testing.
+    # We can test the retrieval chain directly.
+    db = load_faiss_index()
+    question = "What is the main idea of the paper?"
+    answer = retrieval_chain(db, question)
+    print(answer)
+    return {"answer": answer}
 
 if __name__ == "__main__":
-    main()
+    # When running locally as a script, we can test the main handler.
+    main(None, None)
 

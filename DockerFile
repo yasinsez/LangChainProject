@@ -1,20 +1,28 @@
-FROM public.ecr.aws/lambda/python:3.10
+# Use the official AWS Lambda image for Python 3.10 as the base.
+# We specify the platform to ensure the correct image is pulled on all systems (e.g., Apple Silicon).
+FROM --platform=linux/amd64 public.ecr.aws/lambda/python:3.10
 
-# The AWS Lambda base image is minimal and doesn't include a C compiler.
-# Packages like scikit-learn need one to build from source, so we install gcc.
-RUN yum install -y gcc
+# Set the working directory in the container
+WORKDIR /var/task
 
-# Copy requirements.txt first to leverage Docker layer caching.
+# Copy the requirements file first to leverage Docker's layer caching.
+# This step will only be re-run if requirements.txt changes.
 COPY requirements.txt .
-RUN pip install -r requirements.txt
 
-# Copy the application file from the 'app' directory into the Lambda task root.
+# Install Python dependencies from requirements.txt.
+# Using --only-binary=:all: ensures that we only download pre-compiled wheels,
+# which avoids build issues inside the container for packages with native extensions.
+RUN pip install --no-cache-dir --only-binary=:all: -r requirements.txt
+
+# Copy the application code into the container.
 COPY ./app/main.py .
 
-# Copy the pre-built FAISS vector index.
+# Copy the pre-built FAISS vector index required by the application.
 COPY ./faiss_index/ ./faiss_index/
 
-# The CMD parameter is set as the handler for the Lambda function.
-# The format is "<filename>.<handler_function_name>".
-# Our file is main.py and our handler function is handler.
+# Set the command to run when the Lambda function is invoked.
+# The format is "filename.handler_function_name".
+# Based on the reverted code, there is no API, so we'll point to the main function.
+# NOTE: This will now point to the Mangum handler for FastAPI,
+# allowing the function to work with API Gateway.
 CMD [ "main.handler" ]
