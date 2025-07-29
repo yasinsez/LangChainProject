@@ -14,7 +14,7 @@ from mangum import Mangum
 
 load_dotenv()
 app = FastAPI()
-handler = Mangum(app)
+
 
 #Document loading
 def load_document(file_path):
@@ -116,16 +116,7 @@ def ask(question: str):
     db = load_faiss_index()
     return {"answer": retrieval_chain(db, question=question)}
 
-def main(event, context):
-    # This main function is now for direct invocation testing.
-    # We can test the retrieval chain directly.
-    db = load_faiss_index()
-    question = "What is the main idea of the paper?"
-    answer = retrieval_chain(db, question)
-    print(answer)
-    return {"answer": answer}
 
-if __name__ == "__main__":
-    # When running locally as a script, we can test the main handler.
-    main(None, None)
+
+handler = Mangum(app, api_gateway_base_path="/default")
 
