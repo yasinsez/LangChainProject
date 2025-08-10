@@ -124,7 +124,5 @@ def ask(question: str):
     db = load_faiss_index()
     return {"answer": retrieval_chain(db, question=question)}
 
-
-
 handler = Mangum(app, api_gateway_base_path="/default")
 
