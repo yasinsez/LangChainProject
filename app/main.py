@@ -107,6 +107,14 @@ def create_faiss_db_from_document(Paper_path):
     # return db
     pass
 
+#Create a function to load the document and create the FAISS index
+@app.post("/create_faiss_db_from_document")
+def create_faiss_db_from_document(Paper_path):
+    docs = load_document(Paper_path)
+    split_docs = split_document(docs)
+    db = create_embeddings(split_docs)
+    return db
+
 @app.get("/")
 def read_root():
     return {"message": "Hello, World!"}
